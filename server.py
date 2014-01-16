@@ -21,6 +21,9 @@ while True:
     # Establish connection with client.    
     c, (client_host, client_port) = s.accept()
     print 'Got connection from', client_host, client_port
+
+    # @comment The below should have \r\n instead of just \n
+    # does not work in Chrome at the moment. :(
     c.send('HTTP/1.0 200 OK\nContent-type: text/html \n\n')
     c.send("<html><body><h1>Hello world</h1> this is phammin1's Web server</body></html>")
     c.close()
