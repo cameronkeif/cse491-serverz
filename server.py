@@ -87,6 +87,9 @@ def handle_submit(conn, params):
     # submit needs to know about the query field, so more
     # work needs to be done here.
 
+    # @CTB OK, but you really don't want to do this on your own -- please
+    # use urlparse.parse_qs!! Encodings can be tricky.  (e.g. try putting a
+    # space into the name when you type it into the form.)
     # each value is split by an &
     params = params.split("&")
 
@@ -94,7 +97,7 @@ def handle_submit(conn, params):
     firstname = params[0].split("=")[1]
     lastname = params[1].split("=")[1]
 
-    # Screw the patriarchy! Why's it gotta be "Mr."?!
+    # Screw the patriarchy! Why's it gotta be "Mr."?! - @CTB, hah!
     conn.send('HTTP/1.0 200 OK\r\n' + \
               'Content-type: text/html\r\n' + \
               '\r\n' + \
