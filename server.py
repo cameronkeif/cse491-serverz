@@ -46,6 +46,8 @@ def handle_connection(conn):
     elif path == '/submit':
         # POST has the submitted params at the end of the content body
         handle_submit(conn,request.split('\r\n')[-1])
+    else:
+        notfound(conn,'')
   else:
       # Most of these are taking in empty strings. The assignment
       # said to try to keep all the params the same for the future, so I did.
