@@ -96,13 +96,7 @@ def handle_submit(conn, params):
 
     # format is name=value. We want the value.
     firstname = params['firstname'][0]
-
     lastname = params['lastname'][0]
-
-    print firstname
-    print lastname
-
-    print params
 
     # Screw the patriarchy! Why's it gotta be "Mr."?! - @CTB, hah!
     conn.send('HTTP/1.0 200 OK\r\n' + \
