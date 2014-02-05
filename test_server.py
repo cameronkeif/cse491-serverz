@@ -103,6 +103,18 @@ def test_handle_submit():
 
     assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
 
+# test 404
+def test_handle_not_found():
+    conn = FakeConnection("GET /apple HTTP/1.0\r\n\r\n")
+
+    expected_return = 'HTTP/1.0 404 Not Found\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      'Oopsies, this isn\'t the page you want. :('
+
+    server.handle_connection(conn)
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+
 # Test POST connections
 
 # Test / requests
@@ -136,6 +148,19 @@ def test_handle_submit_post():
                       'Content-type: text/html\r\n' + \
                       '\r\n' + \
                       "Hello Mrs. T Swizzle."
+
+    server.handle_connection(conn)
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+    
+
+# test 404
+def test_handle_not_found_post():
+    conn = FakeConnection("POST /apple HTTP/1.0\r\n\r\n")
+
+    expected_return = 'HTTP/1.0 404 Not Found\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      'Oopsies, this isn\'t the page you want. :('
 
     server.handle_connection(conn)
     assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
