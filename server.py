@@ -88,15 +88,10 @@ def handle_submit(conn, params):
     ''' Handle a connection given path /submit '''
     # submit needs to know about the query field, so more
     # work needs to be done here.
-
-    # @CTB OK, but you really don't want to do this on your own -- please
-    # use urlparse.parse_qs!! Encodings can be tricky.  (e.g. try putting a
-    # space into the name when you type it into the form.)
-    # each value is split by an &
     
     params = urlparse.parse_qs(params)
 
-    # format is name=value. We want the value.
+    # we want the first element of the returned list
     firstname = params['firstname'][0]
     lastname = params['lastname'][0]
 
