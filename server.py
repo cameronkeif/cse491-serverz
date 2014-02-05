@@ -64,7 +64,7 @@ def handle_connection(conn):
           handle_submit(conn,parsed_url[4])
       else:
           notfound(conn,'')
-      conn.close()
+  conn.close()
 
 def handle_index(conn, params):
   ''' Handle a connection given path / '''
