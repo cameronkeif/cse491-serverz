@@ -129,7 +129,7 @@ def handle_image(conn, params):
             'This is some image.')
 
 def notfound(conn, params):
-  conn.send('HTTP/1.0 200 OK\r\n' + \
+  conn.send('HTTP/1.0 404 Not Found\r\n' + \
             'Content-type: text/html\r\n' + \
             '\r\n' + \
             'Oopsies, this isn\'t the page you want. :(')
