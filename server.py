@@ -6,6 +6,7 @@ import socket
 import time
 import urlparse
 import cgi
+import jinja2
 from StringIO import StringIO
 
 def main():
@@ -27,6 +28,9 @@ def main():
         handle_connection(c)
 
 def handle_connection(conn):
+  loader = jinja2.FileSystemLoader('./templates')
+  env = jinja2.Environment(loader=loader)
+
   request = conn.recv(1)
   
   # This will get all the headers
@@ -43,67 +47,53 @@ def handle_connection(conn):
     parsed_url = urlparse.urlparse(first_line_of_request_split[1])
     path = parsed_url[2]
   except:
-    path = "/404"
+    not_found(conn,'', env)
+    return
 
   if http_method == 'POST':
     headers_dict, content = parse_post_request(conn, request)
     environ = {}
     environ['REQUEST_METHOD'] = 'POST'
 
-    print request + content
+    print request + content # Print the request
     form = cgi.FieldStorage(headers = headers_dict, fp = StringIO(content), environ = environ)
 
     if path == '/':
-      handle_index(conn, '')
+      handle_index(conn, '', env)
     elif path == '/submit':
         # POST has the submitted params at the end of the content body
-        handle_submit_post(conn,form)
+        handle_submit_post(conn,form, env)
     else:
-        notfound(conn,'')
+        not_found(conn, '', env)
   else:
       print request
       # Most of these are taking in empty strings. The assignment
       # said to try to keep all the params the same for the future, so I did.
       if path == '/':
-          handle_index(conn,'')
+          handle_index(conn, '', env)
       elif path == '/content':
-          handle_content(conn,'')
+          handle_content(conn, '', env)
       elif path == '/file':
-          handle_filepath(conn,'')
+          handle_file(conn, '',env)
       elif path == '/image':
-          handle_image(conn,'')
+          handle_image(conn, '', env)
       elif path == '/submit':
           # GET has the params in the URL.
-          handle_submit_get(conn,parsed_url[4])
+          handle_submit_get(conn,parsed_url[4], env)
       else:
-          notfound(conn,'')
+          not_found(conn, '', env)
   conn.close()
 
-def handle_index(conn, params):
+def handle_index(conn, params, env):
   ''' Handle a connection given path / '''
-  conn.send('HTTP/1.0 200 OK\r\n' + \
+  response = 'HTTP/1.0 200 OK\r\n' + \
             'Content-type: text/html\r\n' + \
             '\r\n' + \
-            "<p><u>Form Submission via GET</u></p>"
-            "<form action='/submit' method='GET'>\n" + \
-            "<p>first name: <input type='text' name='firstname'></p>\n" + \
-            "<p>last name: <input type='text' name='lastname'></p>\n" + \
-            "<p><input type='submit' value='Submit'>\n\n" + \
-            "</form></p>" + \
-            "<p><u>Form Submission via POST (multipart/form-data)</u></p>"
-            "<form action='/submit' method='POST' enctype='multipart/form-data'>\n" + \
-            "<p>first name: <input type='text' name='firstname'></p>\n" + \
-            "<p>last name: <input type='text' name='lastname'></p>\n" + \
-            "<p><input type='submit' value='Submit'>\n\n" + \
-            "</form></p>" + \
-            "<p><u>Form Submission via POST</u></p>"
-            "<form action='/submit' method='POST'\n" + \
-            "<p>first name: <input type='text' name='firstname'></p>\n" + \
-            "<p>last name: <input type='text' name='lastname'></p>\n" + \
-            "<p><input type='submit' value='Submit'>\n\n" + \
-            "</form></p>")
+            env.get_template("index_result.html").render()
+            
+  conn.send(response)
 
-def handle_submit_post(conn, form):
+def handle_submit_post(conn, form, env):
     ''' Handle a connection given path /submit '''
     # submit needs to know about the query field, so more
     # work needs to be done here.
@@ -119,13 +109,17 @@ def handle_submit_post(conn, form):
     except KeyError:
       lastname = ''
 
-    # Screw the patriarchy! Why's it gotta be "Mr."?! - @CTB, hah!
-    conn.send('HTTP/1.0 200 OK\r\n' + \
-              'Content-type: text/html\r\n' + \
-              '\r\n' + \
-              "Hello Mrs. %s %s." % (firstname, lastname))
+    vars = dict(firstname = firstname, lastname = lastname)
+    template = env.get_template("submit_result.html")
+    
+    response = 'HTTP/1.0 200 OK\r\n' + \
+            'Content-type: text/html\r\n' + \
+            '\r\n' + \
+            env.get_template("submit_result.html").render(vars)
+            
+    conn.send(response)
 
-def handle_submit_get(conn, params):
+def handle_submit_get(conn, params, env):
     ''' Handle a connection given path /submit '''
     # submit needs to know about the query field, so more
     # work needs to be done here.
@@ -142,41 +136,51 @@ def handle_submit_get(conn, params):
     except KeyError:
       lastname = ''
 
-    # Screw the patriarchy! Why's it gotta be "Mr."?! - @CTB, hah!
-    conn.send('HTTP/1.0 200 OK\r\n' + \
-              'Content-type: text/html\r\n' + \
-              '\r\n' + \
-              "Hello Mrs. %s %s." % (firstname, lastname))
+    vars = dict(firstname = firstname, lastname = lastname)
+    template = env.get_template("submit_result.html")
+    
+    response = 'HTTP/1.0 200 OK\r\n' + \
+            'Content-type: text/html\r\n' + \
+            '\r\n' + \
+            env.get_template("submit_result.html").render(vars)
+            
+    conn.send(response)
 
-def handle_content(conn, params):
+def handle_content(conn, params, env):
   ''' Handle a connection given path /content '''
-  conn.send('HTTP/1.0 200 OK\r\n' + \
+  response = 'HTTP/1.0 200 OK\r\n' + \
             'Content-type: text/html\r\n' + \
             '\r\n' + \
-            '<h1>Cam is great</h1>' + \
-            'This is some content.')
+            env.get_template("content_result.html").render()
+            
+  conn.send(response)
 
-def handle_filepath(conn, params):
+def handle_file(conn, params, env):
   ''' Handle a connection given path /file '''
-  conn.send('HTTP/1.0 200 OK\r\n' + \
+  response = 'HTTP/1.0 200 OK\r\n' + \
             'Content-type: text/html\r\n' + \
             '\r\n' + \
-            '<h1>They don\'t think it be like it is, but it do.</h1>' + \
-            'This some file.')
+            env.get_template("file_result.html").render()
+            
+  conn.send(response)
 
-def handle_image(conn, params):
+def handle_image(conn, params, env):
   ''' Handle a connection given path /image '''
-  conn.send('HTTP/1.0 200 OK\r\n' + \
+  response = 'HTTP/1.0 200 OK\r\n' + \
             'Content-type: text/html\r\n' + \
             '\r\n' + \
-            '<h1>Wow. Such page. Very HTTP response</h1>' + \
-            'This is some image.')
+            env.get_template("image_result.html").render()
 
-def notfound(conn, params):
-  conn.send('HTTP/1.0 404 Not Found\r\n' + \
+  conn.send(response)
+
+def not_found(conn, params, env):
+
+  response = 'HTTP/1.0 404 Not Found\r\n' + \
             'Content-type: text/html\r\n' + \
             '\r\n' + \
-            'Oopsies, this isn\'t the page you want. :(')
+            env.get_template("not_found.html").render()
+
+  conn.send(response)
 
 def parse_post_request(conn, request):
   ''' Takes in a request (as a string), parses it, and
