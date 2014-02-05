@@ -131,3 +131,15 @@ def test_handle_not_found_post():
     server.handle_connection(conn)
     assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
+
+# Handle large request
+def test_handle_long_request():
+    firstname = lastname = "asdfasdfasdfasdfasdf" * 100
+    conn = FakeConnection("POST /submit HTTP/1.1\r\n" + \
+                          "Content-Length: 4020\r\n\r\n" + \
+                          "firstname=%s&lastname=%s" % (firstname, lastname))
+
+    server.handle_connection(conn)
+    
+    assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
