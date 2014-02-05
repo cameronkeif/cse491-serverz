@@ -27,8 +27,11 @@ def main():
         handle_connection(c)
 
 def handle_connection(conn):
-  request = conn.recv(1000)
-  print request
+  request = conn.recv(1)
+  
+  # This will get all the headers
+  while request[-4:] != '\r\n\r\n':
+    request += conn.recv(1)
 
   first_line_of_request_split = request.split('\r\n')[0].split(' ')
 
@@ -43,11 +46,12 @@ def handle_connection(conn):
     path = "/404"
 
   if http_method == 'POST':
-    headers_dict, content = parse_post_request(request)
+    headers_dict, content = parse_post_request(conn, request)
     environ = {}
     environ['REQUEST_METHOD'] = 'POST'
 
-    form = cgi.FieldStorage(headers = headers_dict, fp = content, environ = environ)
+    print request + content
+    form = cgi.FieldStorage(headers = headers_dict, fp = StringIO(content), environ = environ)
 
     if path == '/':
       handle_index(conn, '')
@@ -57,6 +61,7 @@ def handle_connection(conn):
     else:
         notfound(conn,'')
   else:
+      print request
       # Most of these are taking in empty strings. The assignment
       # said to try to keep all the params the same for the future, so I did.
       if path == '/':
@@ -173,30 +178,30 @@ def notfound(conn, params):
             '\r\n' + \
             'Oopsies, this isn\'t the page you want. :(')
 
-def parse_post_request(request):
+def parse_post_request(conn, request):
   ''' Takes in a request (as a string), parses it, and
       returns a dictionary of header name => header value 
-      returns a StringIO object built from the content of the request
+      returns a string built from the content of the request
       Sidenote: God I love that you can do this in Python. Python is great.'''
   header_dict = dict()
 
-  request = request.split('\r\n')
+  request_split = request.split('\r\n')
 
   # Headers are separated from the content by '\r\n'
   # which, after the split, is just ''.
-  separation_line_index = request.index('')
 
   # First line isn't a header, but everything else
   # up to the empty line is. The names are separated
   # from the values by ': '
-  for i in range(1,separation_line_index):
-    header = request[i].split(': ', 1)
+  for i in range(1,len(request_split) - 2):
+    header = request_split[i].split(': ', 1)
     header_dict[header[0].lower()] = header[1]
 
-  # Originally separated by '\r\n' so make sure we put it back in, in case
-  # there are multiple lines!
+  content_length = int(header_dict['content-length'])
   
-  content = StringIO('\r\n'.join(request[separation_line_index + 1:]))
+  content = ''
+  for i in range(0,content_length):
+    content += conn.recv(1)
 
   return header_dict, content
 
