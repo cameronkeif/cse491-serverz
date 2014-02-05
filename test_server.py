@@ -71,12 +71,32 @@ def test_handle_connection_image():
 # Test path = /submit
 def test_handle_submit():
     conn = FakeConnection("GET /submit?firstname=Taylor&lastname=Swift" + \
-                          "HTTP/1.1\r\n\r\n")
+                          " HTTP/1.1\r\n\r\n")
 
     server.handle_connection(conn)
 
     assert 'html' in conn.sent and "Taylor" in conn.sent \
       and 'Swift' in conn.sent, 'Got: %s' % (repr(conn.sent),)
+
+# Test a submit with no first name
+def test_handle_submit_no_first_name():
+    conn = FakeConnection("GET /submit?firstname=&lastname=Swift" + \
+                          " HTTP/1.1\r\n\r\n")
+
+    server.handle_connection(conn)
+
+    assert 'html' in conn.sent and "Swift" in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# Tests a submit with no last name
+def test_handle_submit_no_last_name():
+    conn = FakeConnection("GET /submit?firstname=Taylor&lastname=" + \
+                          " HTTP/1.1\r\n\r\n")
+
+    server.handle_connection(conn)
+
+    assert 'html' in conn.sent and "Taylor" in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
 
 # test 404
 def test_handle_not_found():
@@ -142,4 +162,13 @@ def test_handle_long_request():
     server.handle_connection(conn)
     
     assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# Test an empty request
+def test_handle_empty_request():
+  conn = FakeConnection("\r\n\r\n")
+
+  server.handle_connection(conn)
+
+  assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
