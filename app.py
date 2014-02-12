@@ -11,49 +11,46 @@ def simple_app(environ, start_response):
     loader = jinja2.FileSystemLoader('./templates')
     env = jinja2.Environment(loader=loader)
 
-    status = '200 OK'
+    # By default, set up the 404 page response. If it's
+    # a valid page, we change this. If some weird stuff
+    # happens, it'll default to 404.
+    status = '404 Not Found'
+    response_content = not_found('', env)
     headers = [('Content-type', 'text/html')]
-
-    start_response(status, headers)
-
+    
     http_method = environ['REQUEST_METHOD']
     path = environ['PATH_INFO']
-    print path
-    if http_method == 'POST':
-        # Printing the request
-        form = cgi.FieldStorage(headers = headers_dict, fp = StringIO(content), environ = environ)
 
+    if http_method == 'POST':
+        form = cgi.FieldStorage(headers = headers_dict, fp = StringIO(content),
+                                environ = environ)
         if path == '/':
-            return handle_index('', env)
+            status = '200 OK'
+            response_content = handle_index('', env)
             
         elif path == '/submit':
         	pass
                 # POST has parameters at the end of content body
                 #handle_submit_post(conn, form, env)
-        else:
-        	pass
-                #not_found(conn, '', env)
     elif http_method == 'GET':
-        #print request
-        print 'GET' # debug
         if path == '/':
-            return handle_index('', env)
+            status = '200 OK'
+            response_content = handle_index('', env)
         elif path == '/content':
-            return handle_content('', env)
+            status = '200 OK'
+            response_content = handle_content('', env)
         elif path == '/file':
-            return handle_file('', env)
+            status = '200 OK'
+            response_content = handle_file('', env)
         elif path == '/image':
-            return handle_image('', env)
+            status = '200 OK'
+            response_content = handle_image('', env)
         elif path == '/submit':
             pass
                 #handle_submit_get(conn, parsed_url[4], env)
-        else:
-            pass
-                #not_found(conn, '', env)
-    else:
-    	pass
-    	#not_found(conn, '', env)
-    return ''
+                
+    start_response(status, headers)
+    return response_content
 
 def make_app():
     return simple_app
@@ -69,3 +66,6 @@ def handle_file(params, env):
 
 def handle_image(params, env):
     return str(env.get_template("image_result.html").render())
+
+def not_found(params, env):
+    return str(env.get_template("not_found.html").render())
