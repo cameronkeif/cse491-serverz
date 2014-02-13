@@ -97,7 +97,6 @@ def handle_submit_post(environ, env):
     except KeyError:
       lastname = ''
 
-    print form
     vars = dict(firstname = firstname, lastname = lastname)
     return str(env.get_template("submit_result.html").render(vars))
 
