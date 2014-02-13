@@ -5,9 +5,7 @@ import urlparse
 import jinja2
 from wsgiref.util import setup_testing_defaults
 
-# A relatively simple WSGI application. It's going to print out the
-# environment dictionary after being updated by setup_testing_defaults
-def simple_app(environ, start_response):
+def app(environ, start_response):
     loader = jinja2.FileSystemLoader('./templates')
     env = jinja2.Environment(loader=loader)
 
@@ -56,7 +54,7 @@ def simple_app(environ, start_response):
     return response_content
 
 def make_app():
-    return simple_app
+    return app
 
 def handle_index(params, env):
     return str(env.get_template("index_result.html").render())
