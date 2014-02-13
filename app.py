@@ -11,8 +11,6 @@ def simple_app(environ, start_response):
     loader = jinja2.FileSystemLoader('./templates')
     env = jinja2.Environment(loader=loader)
 
-    print(environ)
-
     # By default, set up the 404 page response. If it's
     # a valid page, we change this. If some weird stuff
     # happens, it'll default to 404.
