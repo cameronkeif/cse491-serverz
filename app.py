@@ -41,6 +41,7 @@ def app(environ, start_response):
             status = '200 OK'
             response_content = handle_content(environ, env)
         elif path == '/file':
+            headers = [('Content-type', 'text/plain')]
             status = '200 OK'
             response_content = handle_file(environ, env)
         elif path == '/image':
@@ -63,15 +64,19 @@ def handle_index(params, env):
 def handle_content(params, env):
     return str(env.get_template("content_result.html").render())
 
-def handle_file(params, env):
-    return str(env.get_template("file_result.html").render())
-
-def handle_image(params, env):
-    image = open('./images/doge.jpeg', 'rb')
-    data = image.read()
-    image.close()
+def readFile(filepath):
+    ''' Reads a file and returns its contents as a string '''
+    f = open(filepath, 'rb')
+    data = f.read()
+    f.close()
 
     return data
+
+def handle_file(params, env):
+    return readFile('./files/butts.txt')
+
+def handle_image(params, env):
+    return readFile('./images/doge.jpeg')
 
 def not_found(params, env):
     return str(env.get_template("not_found.html").render())
