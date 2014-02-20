@@ -44,6 +44,7 @@ def app(environ, start_response):
             status = '200 OK'
             response_content = handle_file(environ, env)
         elif path == '/image':
+            headers = [('Content-type', 'image/jpeg')]
             status = '200 OK'
             response_content = handle_image(environ, env)
         elif path == '/submit':
@@ -66,7 +67,11 @@ def handle_file(params, env):
     return str(env.get_template("file_result.html").render())
 
 def handle_image(params, env):
-    return str(env.get_template("image_result.html").render())
+    image = open('./images/doge.jpeg', 'rb')
+    data = image.read()
+    image.close()
+
+    return data
 
 def not_found(params, env):
     return str(env.get_template("not_found.html").render())
