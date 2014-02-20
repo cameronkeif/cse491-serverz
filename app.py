@@ -53,7 +53,9 @@ def app(environ, start_response):
             response_content = handle_submit_get(environ, env)
                 
     start_response(status, headers)
-    return response_content
+    response = []
+    response.append(response_content)
+    return response
 
 def make_app():
     return app

@@ -3,7 +3,8 @@ import random
 import socket
 import time
 import urlparse
-import cgi
+import os
+import sys
 
 from StringIO import StringIO
 from app import make_app
@@ -24,10 +25,20 @@ def main():
         # Establish connection with client.    
         c, (client_host, client_port) = s.accept()
         print 'Got connection from', client_host, client_port, '\n'
-        handle_connection(c)
+        handle_connection(c, host, port)
 
-def handle_connection(conn):
-  environ = {}
+def handle_connection(conn, host, port):
+  environ = dict(os.environ.items())
+  environ['wsgi.errors']       = sys.stderr
+  environ['wsgi.version']      = (1, 0)
+  environ['wsgi.multithread']  = False
+  environ['wsgi.multiprocess'] = True
+  environ['wsgi.run_once']     = True
+  environ['wsgi.url_scheme']   = 'http'
+  environ['SERVER_NAME']       = host
+  environ['SERVER_PORT']       = str(port)
+  environ['SCRIPT_NAME']       = ''
+
   request = conn.recv(1)
   
   # This will get all the headers
@@ -58,10 +69,19 @@ def handle_connection(conn):
 
   if environ['REQUEST_METHOD'] == 'POST':
     environ = parse_post_request(conn, request, environ)
+    environ['QUERY_STRING'] = ''
   elif environ['REQUEST_METHOD'] == 'GET':
     environ['QUERY_STRING'] = parsed_url.query
+    environ['wsgi.input'] = StringIO('')
+
   wsgi_app = make_app()
-  conn.send(wsgi_app(environ, start_response))
+  result = wsgi_app(environ, start_response)
+  try:
+    for response in result:
+      conn.send(response)
+  finally:
+    if hasattr(result, 'close'):
+      result.close()
   conn.close()
 
 def parse_post_request(conn, request, environ):
