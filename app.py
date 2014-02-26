@@ -41,9 +41,11 @@ def app(environ, start_response):
             status = '200 OK'
             response_content = handle_content(environ, env)
         elif path == '/file':
+            headers = [('Content-type', 'text/plain')]
             status = '200 OK'
             response_content = handle_file(environ, env)
         elif path == '/image':
+            headers = [('Content-type', 'image/jpeg')]
             status = '200 OK'
             response_content = handle_image(environ, env)
         elif path == '/submit':
@@ -51,7 +53,9 @@ def app(environ, start_response):
             response_content = handle_submit_get(environ, env)
                 
     start_response(status, headers)
-    return response_content
+    response = []
+    response.append(response_content)
+    return response
 
 def make_app():
     return app
@@ -62,11 +66,19 @@ def handle_index(params, env):
 def handle_content(params, env):
     return str(env.get_template("content_result.html").render())
 
+def readFile(filepath):
+    ''' Reads a file and returns its contents as a string '''
+    f = open(filepath, 'rb')
+    data = f.read()
+    f.close()
+
+    return data
+
 def handle_file(params, env):
-    return str(env.get_template("file_result.html").render())
+    return readFile('./files/butts.txt')
 
 def handle_image(params, env):
-    return str(env.get_template("image_result.html").render())
+    return readFile('./images/doge.jpeg')
 
 def not_found(params, env):
     return str(env.get_template("not_found.html").render())

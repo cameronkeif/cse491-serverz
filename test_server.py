@@ -31,7 +31,7 @@ class FakeConnection(object):
 def test_handle_connection():
     conn = FakeConnection("GET / HTTP/1.0\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
     assert 'HTTP/1.0 200' in conn.sent and 'form' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
@@ -40,7 +40,7 @@ def test_handle_connection():
 def test_handle_connection_content():
     conn = FakeConnection("GET /content HTTP/1.0\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
     assert 'HTTP/1.0 200' in conn.sent and 'content' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
@@ -49,23 +49,18 @@ def test_handle_connection_content():
 def test_handle_connection_file():
     conn = FakeConnection("GET /file HTTP/1.0\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
-    assert 'HTTP/1.0 200' in conn.sent and 'file' in conn.sent, \
+    assert 'HTTP/1.0 200' in conn.sent and 'text/plain' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
 
 # Test path = /content
 def test_handle_connection_image():
     conn = FakeConnection("GET /image HTTP/1.0\r\n\r\n")
-    expected_return = 'HTTP/1.0 200 OK\r\n' + \
-                      'Content-type: text/html\r\n' + \
-                      '\r\n' + \
-                      '<h1>Wow. Such page. Very HTTP response</h1>' + \
-                      'This is some image.'
 
-    server.handle_connection(conn)
-    print conn.sent
-    assert 'HTTP/1.0 200' in conn.sent and 'image' in conn.sent, \
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+    
+    assert 'HTTP/1.0 200' in conn.sent and 'image/jpeg' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
 
 # Test path = /submit
@@ -73,7 +68,7 @@ def test_handle_submit():
     conn = FakeConnection("GET /submit?firstname=Taylor&lastname=Swift" + \
                           " HTTP/1.1\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
     assert 'html' in conn.sent and "Taylor" in conn.sent \
       and 'Swift' in conn.sent, 'Got: %s' % (repr(conn.sent),)
@@ -83,7 +78,7 @@ def test_handle_submit_no_first_name():
     conn = FakeConnection("GET /submit?firstname=&lastname=Swift" + \
                           " HTTP/1.1\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
     assert 'html' in conn.sent and "Swift" in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
@@ -93,7 +88,7 @@ def test_handle_submit_no_last_name():
     conn = FakeConnection("GET /submit?firstname=Taylor&lastname=" + \
                           " HTTP/1.1\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
     assert 'html' in conn.sent and "Taylor" in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
@@ -102,7 +97,8 @@ def test_handle_submit_no_last_name():
 def test_handle_not_found():
     conn = FakeConnection("GET /poop HTTP/1.0\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
     assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
 
@@ -113,7 +109,8 @@ def test_handle_connection_post():
     conn = FakeConnection("POST / HTTP/1.0\r\n" + \
       "Content-length: 0\r\n\r\n")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
     assert 'HTTP/1.0 200' in conn.sent and 'form' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
 
@@ -123,7 +120,7 @@ def test_handle_submit_post():
                           "Content-Length: 31\r\n\r\n" + \
                           "firstname=Taylor&lastname=Swift")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
     
     assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
@@ -137,7 +134,7 @@ def test_handle_submit_post_multipart_and_form_data():
           'Content-Disposition: form-data; name="lastname"\r\n\r\nSwift' + \
           '\r\n------WebKitFormBoundaryAaal27xQakxMcNYm--")')
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
     
     assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
@@ -148,7 +145,8 @@ def test_handle_not_found_post():
                           "Content-Length: 31\r\n\r\n" + \
                           "firstname=Taylor&lastname=Swift")
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
     assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
 
@@ -159,7 +157,7 @@ def test_handle_long_request():
                           "Content-Length: 4020\r\n\r\n" + \
                           "firstname=%s&lastname=%s" % (firstname, lastname))
 
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
     
     assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
@@ -168,7 +166,7 @@ def test_handle_long_request():
 def test_handle_empty_request():
   conn = FakeConnection("\r\n\r\n")
 
-  server.handle_connection(conn)
+  server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
   assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
