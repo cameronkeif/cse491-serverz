@@ -73,7 +73,7 @@ def handle_connection(conn, host, port):
   elif environ['REQUEST_METHOD'] == 'GET':
     environ['QUERY_STRING'] = parsed_url.query
     environ['wsgi.input'] = StringIO('')
-
+  
   wsgi_app = make_app()
   result = wsgi_app(environ, start_response)
   try:
@@ -95,8 +95,15 @@ def parse_post_request(conn, request, environ):
   # from the values by ': '
   for i in range(1,len(request_split) - 2):
       header = request_split[i].split(': ', 1)
-      environ[header[0].upper()] = header[1]
 
+      if header[0].upper() == 'COOKIE':
+        environ['HTTP_COOKIE'] = header[1]
+      else:
+        environ[header[0].upper()] = header[1]
+  
+  if 'HTTP_COOKIE' not in environ.keys():
+    environ['HTTP_COOKIE'] = ''
+    
   content_length = int(environ['CONTENT-LENGTH'])
   
   content = ''
