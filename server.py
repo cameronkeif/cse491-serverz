@@ -99,21 +99,22 @@ def handle_connection(conn, host, port, appname):
   
   # Create the appropriate wsgi app based on the command-line parameter
   if appname == "image":
-      try:
-          # Sometimes this gets called multiple times. Blergh.
-          p = imageapp.create_publisher()
-      except RuntimeError:
-          pass
-    
-      imageapp.setup()
-      wsgi_app = quixote.get_wsgi_app()
+    try:
+      # Sometimes this gets called multiple times. Blergh.
+      p = imageapp.create_publisher()
+    except RuntimeError:
+      pass
+  
+    imageapp.setup()
+    wsgi_app = quixote.get_wsgi_app()
+
   elif appname == "myapp":
-      wsgi_app = app.make_app()
+    wsgi_app = app.make_app()
   elif appname == "altdemo":
-      try:
-        p = quixote.demo.altdemo.create_publisher()
-      except RuntimeError:
-        pass
+    try:
+      p = quixote.demo.altdemo.create_publisher()
+    except RuntimeError:
+      pass
 
     wsgi_app = quixote.get_wsgi_app()
 
@@ -123,6 +124,7 @@ def handle_connection(conn, host, port, appname):
       conn.send(response)
   finally:
     if hasattr(result, 'close'):
+      imageapp.teardown()
       result.close()
   conn.close()
 
