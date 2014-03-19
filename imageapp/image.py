@@ -7,7 +7,8 @@ def add_image(filename, data):
         image_num = max(images.keys()) + 1
     else:
         image_num = 0
-        
+
+    print "FILE:", filename
     images[image_num] = (filename, data)
     return image_num
 

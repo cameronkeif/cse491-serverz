@@ -28,9 +28,9 @@ class RootDirectory(Directory):
         the_file = request.form['file']
         print dir(the_file)
         print 'received file with name:', the_file.base_filename
-        data = the_file.read(int(1e9))
+        data = the_file.read(the_file.get_size())
 
-        image.add_image(the_file, data)
+        image.add_image(the_file.base_filename, data)
 
         return quixote.redirect('./')
 
@@ -46,9 +46,9 @@ class RootDirectory(Directory):
         the_file = request.form['file']
         print dir(the_file)
         print 'received file with name:', the_file.base_filename
-        data = the_file.read(int(1e9))
+        data = the_file.read(the_file.get_size())
 
-        image.add_image(the_file, data)
+        image.add_image(the_file.base_filename, data)
 
         return html.render('upload2_received.html')
 

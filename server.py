@@ -124,10 +124,10 @@ def handle_connection(conn, host, port, appname):
     try:
       # Sometimes this gets called multiple times. Blergh.
       p = imageapp.create_publisher()
+      imageapp.setup()
     except RuntimeError:
       pass
   
-    imageapp.setup()
     wsgi_app = quixote.get_wsgi_app()
 
   elif appname == "myapp":
