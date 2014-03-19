@@ -37,7 +37,12 @@
 * Implemented command line options in server.py to run imageapp, quixote demo app, and app.py
 * Add twill tests for all 3 applications
 * PROJECT: Change imageapp to support JPEG and TIFF. (5pts)
-    - This was done by modifying the code in imageapp/image.py and imageapp/root.py.
+    - Summary: imageapp will now allow users to upload JPEG and TIFF images instead
+      of only PNGs and display them. PNG images are still supported. Most browsers
+      don't support TIFF very well without extensions.
+
+    - This was primarily done by modifying the code in imageapp/image.py and 
+      imageapp/root.py.
 
     - In image.py, I add_image was modified to accept an additional parameter, filename, 
       which is the filename of the image. This is added in a tuple with the image data 
