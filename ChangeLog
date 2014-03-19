@@ -2,13 +2,51 @@
 
  * Initialized repository, created server.py and README.
 
-2014-01-14 Cameron Keif <keifcame@arctic.cse.msu.edu>
+2014-01-14 Cameron Keif
  * Return HTTP response to client
 
-2014-01-22 Cameron Keif <keifcame@arctic.cse.msu.edu>
+2014-01-22 Cameron Keif
  * Added test_server.py for automated testing.
  * Return different responses for /, /content, /file, and /image paths.
  * Differentiate between GET and POST requests.
 
-2014-01-29
+2014-01-29 Cameron Keif
  * Added support for HTML forms, using both GET and POST.
+
+2014-02-6 Cameron Keif
+* Can now handle POST requests with Content-Type of multipart/form-data
+* Read requests of arbitrary size
+* Utilize HTML templating
+* Add 404 page
+
+2014-02-13 Cameron Keif
+* Refactor to WSGI application architecture
+* Utilize HTML templating inheritance
+
+2014-02-20 Cameron Keif
+* /file and /image now serve the appropriate content types, text/plain and image/jpeg
+* Utilize wsgiref validator
+* Add and test with Quixote demo apps
+
+2014-20-27 Cameron Keif
+* Add cookie header handling to WSGI server
+* Add image upload application, imageapp
+* Modified imageapp to display latest image on index page
+
+2014-3-20 Cameron Keif
+* Implemented command line options in server.py to run imageapp, quixote demo app, and app.py
+* Add twill tests for all 3 applications
+* PROJECT: Change imageapp to support JPEG and TIFF. (5pts)
+    - This was done by modifying the code in imageapp/image.py and imageapp/root.py.
+
+    - In image.py, I add_image was modified to accept an additional parameter, filename, 
+      which is the filename of the image. This is added in a tuple with the image data 
+      to the images dictionary in the form (filename, data).
+
+    - Now, get_image/get_latest_image will return (filename, data). This is utilized in
+      root.py. In image_raw, rather than setting the reponse content type to image/png,
+      the filename is parsed to find the extension. That file extension is used to
+      determine what the content type should be set to (image/jpeg for .jpg/.jpeg and
+      image/tiff for .tif/.tiff). The file extension is not case senstive, .TIF will
+      work just as .tif would.
+
