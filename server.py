@@ -6,9 +6,12 @@ import urlparse
 import os
 import sys
 import argparse
+import imageapp
+import quixote
+import quixote.demo.altdemo
+import app
 
 from StringIO import StringIO
-from app import make_app
 
 def main():
     # Set up the argument parser
@@ -16,14 +19,23 @@ def main():
     parser.add_argument('-p', metavar='-p', type=int, nargs='?', default=8000,
                    help='an integer for the port number')
 
-    args = parser.parse_args()
+    parser.add_argument('-A', metavar='-A', type=str, nargs=1,
+                   help='the app to run (image, altdemo, or myapp)')
 
+    args = parser.parse_args()
+    appname = args.A[0]
+
+    if appname != "myapp" and appname != "image" and appname != "altdemo":
+      raise Exception("Invalid application name. Please enter 'myapp', 'image', or 'altdemo'")
     s = socket.socket()         # Create a socket object
     host = socket.getfqdn()     # Get local machine name
     port = args.p
+
     if port < 8000 or port > 9999:
       print "Invalid port number. Setting to default port number 8000."
       port = 8000
+
+
     s.bind((host, port))        # Bind to the port
 
     print 'Starting server on', host, port
@@ -36,9 +48,9 @@ def main():
         # Establish connection with client.    
         c, (client_host, client_port) = s.accept()
         print 'Got connection from', client_host, client_port, '\n'
-        handle_connection(c, host, port)
+        handle_connection(c, host, port, appname)
 
-def handle_connection(conn, host, port):
+def handle_connection(conn, host, port, appname):
   environ = dict(os.environ.items())
   environ['wsgi.errors']       = sys.stderr
   environ['wsgi.version']      = (1, 0)
@@ -85,7 +97,26 @@ def handle_connection(conn, host, port):
     environ['QUERY_STRING'] = parsed_url.query
     environ['wsgi.input'] = StringIO('')
   
-  wsgi_app = make_app()
+  # Create the appropriate wsgi app based on the command-line parameter
+  if appname == "image":
+      try:
+          # Sometimes this gets called multiple times. Blergh.
+          p = imageapp.create_publisher()
+      except RuntimeError:
+          pass
+    
+      imageapp.setup()
+      wsgi_app = quixote.get_wsgi_app()
+  elif appname == "myapp":
+      wsgi_app = app.make_app()
+  elif appname == "altdemo":
+      try:
+        p = quixote.demo.altdemo.create_publisher()
+      except RuntimeError:
+        pass
+
+    wsgi_app = quixote.get_wsgi_app()
+
   result = wsgi_app(environ, start_response)
   try:
     for response in result:
