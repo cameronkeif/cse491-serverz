@@ -5,14 +5,25 @@ import time
 import urlparse
 import os
 import sys
+import argparse
 
 from StringIO import StringIO
 from app import make_app
 
 def main():
+    # Set up the argument parser
+    parser = argparse.ArgumentParser(description='Server for several WSGI apps')
+    parser.add_argument('-p', metavar='-p', type=int, nargs='?', default=8000,
+                   help='an integer for the port number')
+
+    args = parser.parse_args()
+
     s = socket.socket()         # Create a socket object
     host = socket.getfqdn()     # Get local machine name
-    port = random.randint(8000, 9999)
+    port = args.p
+    if port < 8000 or port > 9999:
+      print "Invalid port number. Setting to default port number 8000."
+      port = 8000
     s.bind((host, port))        # Bind to the port
 
     print 'Starting server on', host, port
