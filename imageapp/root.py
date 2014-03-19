@@ -14,7 +14,7 @@ class RootDirectory(Directory):
 
     @export(name='jquery')
     def jquery(self):
-        return open('jquery-1.3.2.min.js').read()
+        return open('jquery-1.11.0.min.js').read()
 
     @export(name='upload')
     def upload(self):
@@ -30,7 +30,7 @@ class RootDirectory(Directory):
         print 'received file with name:', the_file.base_filename
         data = the_file.read(int(1e9))
 
-        image.add_image(data)
+        image.add_image(the_file, data)
 
         return quixote.redirect('./')
 
@@ -48,7 +48,7 @@ class RootDirectory(Directory):
         print 'received file with name:', the_file.base_filename
         data = the_file.read(int(1e9))
 
-        image.add_image(data)
+        image.add_image(the_file, data)
 
         return html.render('upload2_received.html')
 
@@ -59,6 +59,11 @@ class RootDirectory(Directory):
     @export(name='image_raw')
     def image_raw(self):
         response = quixote.get_response()
-        response.set_content_type('image/png')
         img = image.get_latest_image()
-        return img
+        if img[0].split('.')[-1].lower() in ('jpg', 'jpeg'):
+            response.set_content_type('image/jpeg')
+        elif img[0].split('.')[-1].lower() in ('tif',' tiff'):
+            response.set_content_type('image/tiff')
+        else: # Default to .png for reasons
+            response.set_content_type('image/png')
+        return img[1]
