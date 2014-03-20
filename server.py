@@ -10,6 +10,7 @@ import imageapp
 import quixote
 import quixote.demo.altdemo
 import app
+import quotes
 
 from StringIO import StringIO
 
@@ -25,7 +26,8 @@ def main():
     args = parser.parse_args()
     appname = args.A[0]
 
-    if appname != "myapp" and appname != "image" and appname != "altdemo":
+    validApps = ['myapp', 'image', 'altdemo', 'quotes']
+    if appname not in validApps:
       raise Exception("Invalid application name. Please enter 'myapp', 'image', or 'altdemo'")
     s = socket.socket()         # Create a socket object
     host = socket.getfqdn()     # Get local machine name
@@ -139,6 +141,10 @@ def handle_connection(conn, host, port, appname):
       pass
 
     wsgi_app = quixote.get_wsgi_app()
+  elif appname == "quotes":
+    # The quotes files are in the 'quotes' subdirectory
+    directory_path = './quotes/'
+    wsgi_app = quotes.create_quotes_app(directory_path + 'quotes.txt', directory_path + 'html')
 
   result = wsgi_app(environ, start_response)
   try:
