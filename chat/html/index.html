@@ -37,7 +37,7 @@ $(document).ready(function() {
 
         author = $("author", message).text();
         content = $("text", message).text();
-
+        console.log($("timestamp", message).text());
         $("#messagewindow").prepend("<b>" + author + "</b>:" + content 
                                     + "<br>");
      });
