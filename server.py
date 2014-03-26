@@ -5,14 +5,36 @@ import time
 import urlparse
 import os
 import sys
+import argparse
+import imageapp
+import quixote
+import quixote.demo.altdemo
+import app
 
 from StringIO import StringIO
-from app import make_app
 
 def main():
+    # Set up the argument parser
+    parser = argparse.ArgumentParser(description='Server for several WSGI apps')
+    parser.add_argument('-p', metavar='-p', type=int, nargs='?', default=-1,
+                   help='an integer for the port number')
+
+    parser.add_argument('-A', metavar='-A', type=str, nargs=1,
+                   help='the app to run (image, altdemo, or myapp)')
+
+    args = parser.parse_args()
+    appname = args.A[0]
+
+    if appname != "myapp" and appname != "image" and appname != "altdemo":
+      raise Exception("Invalid application name. Please enter 'myapp', 'image', or 'altdemo'")
     s = socket.socket()         # Create a socket object
     host = socket.getfqdn()     # Get local machine name
-    port = random.randint(8000, 9999)
+    port = args.p
+
+    if port < 8000 or port > 9999:
+      port = random.randint(8000,9999)
+
+
     s.bind((host, port))        # Bind to the port
 
     print 'Starting server on', host, port
@@ -25,25 +47,25 @@ def main():
         # Establish connection with client.    
         c, (client_host, client_port) = s.accept()
         print 'Got connection from', client_host, client_port, '\n'
-        handle_connection(c, host, port)
+        handle_connection(c, host, port, appname)
 
-def handle_connection(conn, host, port):
-  environ = dict(os.environ.items())
-  environ['wsgi.errors']       = sys.stderr
-  environ['wsgi.version']      = (1, 0)
-  environ['wsgi.multithread']  = False
-  environ['wsgi.multiprocess'] = True
-  environ['wsgi.run_once']     = True
-  environ['wsgi.url_scheme']   = 'http'
-  environ['SERVER_NAME']       = host
-  environ['SERVER_PORT']       = str(port)
-  environ['SCRIPT_NAME']       = ''
-
+def handle_connection(conn, host, port, appname):
+  environ = {}
   request = conn.recv(1)
   
   # This will get all the headers
   while request[-4:] != '\r\n\r\n':
-    request += conn.recv(1)
+    new = conn.recv(1)
+    if new == '':
+        return
+    else:
+        request += new
+
+  request, data = request.split('\r\n',1)
+  headers = {}
+  for line in data.split('\r\n')[:-2]:
+      key, val = line.split(': ', 1)
+      headers[key.lower()] = val
 
   first_line_of_request_split = request.split('\r\n')[0].split(' ')
 
@@ -55,8 +77,26 @@ def handle_connection(conn, host, port):
   try:
     parsed_url = urlparse.urlparse(first_line_of_request_split[1])
     environ['PATH_INFO'] = parsed_url[2]
+    env['QUERY_STRING'] = parsed_url[4]
   except:
     pass
+
+  urlInfo = urlparse.urlparse(request.split(' ', 3)[1])
+  environ['REQUEST_METHOD'] = 'GET'
+  environ['PATH_INFO'] = urlInfo[2]
+  environ['QUERY_STRING'] = urlInfo[4]
+  environ['CONTENT_TYPE'] = 'text/html'
+  environ['CONTENT_LENGTH'] = str(0)
+  environ['SCRIPT_NAME'] = ''
+  environ['SERVER_NAME'] = socket.getfqdn()
+  environ['SERVER_PORT'] = str(port)
+  environ['wsgi.version'] = (1, 0)
+  environ['wsgi.errors'] = sys.stderr
+  environ['wsgi.multithread']  = False
+  environ['wsgi.multiprocess'] = False
+  environ['wsgi.run_once']     = False
+  environ['wsgi.url_scheme'] = 'http'
+  environ['HTTP_COOKIE'] = headers['cookie'] if 'cookie' in headers.keys() else ''
 
   def start_response(status, response_headers):
         conn.send('HTTP/1.0 ')
@@ -67,14 +107,39 @@ def handle_connection(conn, host, port):
             conn.send(key + ': ' + header + '\r\n')
         conn.send('\r\n')
 
-  if environ['REQUEST_METHOD'] == 'POST':
-    environ = parse_post_request(conn, request, environ)
-    environ['QUERY_STRING'] = ''
-  elif environ['REQUEST_METHOD'] == 'GET':
-    environ['QUERY_STRING'] = parsed_url.query
-    environ['wsgi.input'] = StringIO('')
+  content = ''
+  if request.startswith('POST '):
+      environ['REQUEST_METHOD'] = 'POST'
+      environ['CONTENT_LENGTH'] = str(headers['content-length'])
+      environ['CONTENT_TYPE'] = headers['content-type']
+
+      cLen = int(headers['content-length'])
+      while len(content) < cLen:
+          content += conn.recv(1)
+      
+  environ['wsgi.input'] = StringIO(content)
   
-  wsgi_app = make_app()
+  # Create the appropriate wsgi app based on the command-line parameter
+  if appname == "image":
+    try:
+      # Sometimes this gets called multiple times. Blergh.
+      p = imageapp.create_publisher()
+      imageapp.setup()
+    except RuntimeError:
+      pass
+  
+    wsgi_app = quixote.get_wsgi_app()
+
+  elif appname == "myapp":
+    wsgi_app = app.make_app()
+  elif appname == "altdemo":
+    try:
+      p = quixote.demo.altdemo.create_publisher()
+    except RuntimeError:
+      pass
+
+    wsgi_app = quixote.get_wsgi_app()
+
   result = wsgi_app(environ, start_response)
   try:
     for response in result:
@@ -83,35 +148,6 @@ def handle_connection(conn, host, port):
     if hasattr(result, 'close'):
       result.close()
   conn.close()
-
-def parse_post_request(conn, request, environ):
-  request_split = request.split('\r\n')
-
-  # Headers are separated from the content by '\r\n'
-  # which, after the split, is just ''.
-
-  # First line isn't a header, but everything else
-  # up to the empty line is. The names are separated
-  # from the values by ': '
-  for i in range(1,len(request_split) - 2):
-      header = request_split[i].split(': ', 1)
-
-      if header[0].upper() == 'COOKIE':
-        environ['HTTP_COOKIE'] = header[1]
-      else:
-        environ[header[0].upper()] = header[1]
-  
-  if 'HTTP_COOKIE' not in environ.keys():
-    environ['HTTP_COOKIE'] = ''
-    
-  content_length = int(environ['CONTENT-LENGTH'])
-  
-  content = ''
-  for i in range(0,content_length):
-      content += conn.recv(1)
-
-  environ['wsgi.input'] = StringIO(content)
-  return environ
 
 if __name__ == '__main__':
    main()

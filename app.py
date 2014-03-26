@@ -4,6 +4,7 @@ import cgi
 import urlparse
 import jinja2
 from wsgiref.util import setup_testing_defaults
+from StringIO import StringIO
 
 def app(environ, start_response):
     loader = jinja2.FileSystemLoader('./templates')
@@ -85,25 +86,38 @@ def not_found(params, env):
 
 def handle_submit_post(environ, env):
     ''' Handle a connection given path /submit '''
-    # submit needs to know about the query field, so more
-    # work needs to be done here.
-
-    # we want the first element of the returned list
+    
     headers = {}
     for k in environ.keys():
         headers[k.lower()] = environ[k]
+
+    headers['content-type'] = environ['CONTENT_TYPE']
+    headers['content-length'] = environ['CONTENT_LENGTH']    
+
+    firstNameFieldName = 'firstnamePOST2'
+    lastNameFieldName = 'lastnamePOST2'
+
+    # Kludgey workaround
+    if "multipart/form-data" in environ['CONTENT_TYPE']:
+        cLen = int(environ['CONTENT_LENGTH'])
+        data = environ['wsgi.input'].read(cLen)
+        environ['wsgi.input'] = StringIO(data)
+
+        firstNameFieldName = 'firstnamePOST1'
+        lastNameFieldName = 'lastnamePOST1'
 
     form = cgi.FieldStorage(headers = headers, fp = environ['wsgi.input'], 
                             environ = environ)
 
     try:
-      firstname = form['firstname'].value
+      firstname = form[firstNameFieldName].value
     except KeyError:
       firstname = ''
+
     try:
-      lastname = form['lastname'].value
+      lastname = form[lastNameFieldName].value
     except KeyError:
-      lastname = ''
+        lastname = ''
 
     vars = dict(firstname = firstname, lastname = lastname)
     return str(env.get_template("submit_result.html").render(vars))
