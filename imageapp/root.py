@@ -56,10 +56,22 @@ class RootDirectory(Directory):
     def image(self):
         return html.render('image.html')
 
+    @export(name='image_list')
+    def image_list(self):
+        return html.render('image_list.html')
+
+    @export(name='image_count')
+    def image_count(self):
+        return len(image.images)
+
     @export(name='image_raw')
     def image_raw(self):
         response = quixote.get_response()
-        img = image.get_latest_image()
+        request = quixote.get_request()
+        try:
+            img = image.get_image(int(request.form['num']))
+        except KeyError:
+            img = image.get_latest_image()
         if img[0].split('.')[-1].lower() in ('jpg', 'jpeg'):
             response.set_content_type('image/jpeg')
         elif img[0].split('.')[-1].lower() in ('tif',' tiff'):

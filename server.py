@@ -118,7 +118,10 @@ def handle_connection(conn, host, port, appname):
   if request.startswith('POST '):
       environ['REQUEST_METHOD'] = 'POST'
       environ['CONTENT_LENGTH'] = str(headers['content-length'])
-      environ['CONTENT_TYPE'] = headers['content-type']
+      try:
+        environ['CONTENT_TYPE'] = headers['content-type']
+      except:
+        pass
 
       cLen = int(headers['content-length'])
       while len(content) < cLen:
