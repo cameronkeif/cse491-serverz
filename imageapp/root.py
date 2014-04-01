@@ -72,10 +72,57 @@ class RootDirectory(Directory):
             img = image.get_image(int(request.form['num']))
         except KeyError:
             img = image.get_latest_image()
-        if img[0].split('.')[-1].lower() in ('jpg', 'jpeg'):
+
+        filename = img.filename
+        if filename.lower() in ('jpg', 'jpeg'):
             response.set_content_type('image/jpeg')
-        elif img[0].split('.')[-1].lower() in ('tif',' tiff'):
+        elif filename.lower() in ('tif',' tiff'):
             response.set_content_type('image/tiff')
         else: # Default to .png for reasons
             response.set_content_type('image/png')
-        return img[1]
+        return img.data
+
+    @export(name='get_comments')
+    def get_comments(self):
+        response = quixote.get_response()
+        request = quixote.get_request()
+
+        try:
+            img = image.get_image(int(request.form['num']))
+        except KeyError:
+            img = image.get_latest_image()
+
+        all_comments = []
+        for comment in img.get_comments():
+            print comment
+            all_comments.append("""\
+    <comment>
+     <text>%s</text>
+    </comment>
+    """ % (comment))
+
+        xml = """
+    <?xml version="1.0"?>
+    <comments>
+    %s
+    </comments>
+    """ % ("".join(all_comments))
+
+        return xml
+
+    @export(name='add_comment')
+    def add_comment(self):
+        response = quixote.get_response()
+        request = quixote.get_request()
+
+        try:
+            img = image.get_image(int(request.form['num']))
+        except KeyError:
+            img = image.get_latest_image()
+
+        try:
+            comment = request.form['comment']
+        except:
+            return
+
+        img.add_comment(comment)
