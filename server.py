@@ -10,6 +10,8 @@ import imageapp
 import quixote
 import quixote.demo.altdemo
 import app
+import quotes
+import chat
 
 from StringIO import StringIO
 
@@ -23,10 +25,15 @@ def main():
                    help='the app to run (image, altdemo, or myapp)')
 
     args = parser.parse_args()
-    appname = args.A[0]
+    try:
+      appname = args.A[0]
+    except TypeError:
+      appname = "HOLYSHITINVALIDAPPWTF"
 
-    if appname != "myapp" and appname != "image" and appname != "altdemo":
-      raise Exception("Invalid application name. Please enter 'myapp', 'image', or 'altdemo'")
+    validApps = ['myapp', 'image', 'altdemo', 'quotes', 'chat']
+    if appname not in validApps:
+      raise Exception("Invalid application name. Please enter -A followed by 'myapp', " + 
+        "'image', 'altdemo', 'quotes', or 'chat'")
     s = socket.socket()         # Create a socket object
     host = socket.getfqdn()     # Get local machine name
     port = args.p
@@ -111,7 +118,10 @@ def handle_connection(conn, host, port, appname):
   if request.startswith('POST '):
       environ['REQUEST_METHOD'] = 'POST'
       environ['CONTENT_LENGTH'] = str(headers['content-length'])
-      environ['CONTENT_TYPE'] = headers['content-type']
+      try:
+        environ['CONTENT_TYPE'] = headers['content-type']
+      except:
+        pass
 
       cLen = int(headers['content-length'])
       while len(content) < cLen:
@@ -139,6 +149,14 @@ def handle_connection(conn, host, port, appname):
       pass
 
     wsgi_app = quixote.get_wsgi_app()
+  elif appname == "quotes":
+    # The quotes files are in the 'quotes' subdirectory
+    directory_path = './quotes/'
+    wsgi_app = quotes.create_quotes_app(directory_path + 'quotes.txt', directory_path + 'html')
+
+  elif appname == "chat":
+    # The chat files are in the 'quotes' subdirectory
+    wsgi_app = chat.create_chat_app('./chat/html')
 
   result = wsgi_app(environ, start_response)
   try:

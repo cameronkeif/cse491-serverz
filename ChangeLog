@@ -37,6 +37,7 @@
 * Implemented command line options in server.py to run imageapp, quixote demo app, and app.py
 * Add twill tests for all 3 applications
 * PROJECT: Change imageapp to support JPEG and TIFF. (5pts)
+    
     - Summary: imageapp will now allow users to upload JPEG and TIFF images instead
       of only PNGs and display them. PNG images are still supported. Most browsers
       don't support TIFF very well without extensions.
@@ -55,3 +56,16 @@
       image/tiff for .tif/.tiff). The file extension is not case senstive, .TIF will
       work just as .tif would.
 
+2014-3-20 Cameron Keif
+  * Integrated quotes app
+  * Integrated chat app and added a timestamp to each image in the chat window
+  * PROJECT: Add a URL that provides a list of images, resized to thumbnails (you can just img size, not
+    actual resizing – that will be a separate project ;).
+
+    - Summary: There's a link on the index page to see a list of all the images that were uploaded. It shows
+      the most recently updated image first.
+
+    - I added a check in get_image_raw() to see if the request included a query parameter "num". If so, 
+      rather than getting the most recent image, it gets the image at images[num]. I also added a method to
+      return the count of images. Using these two things, I can make a few ajax calls in the image list page
+      to iterate over images and display every image.
