@@ -68,10 +68,8 @@ class RootDirectory(Directory):
     def image_raw(self):
         response = quixote.get_response()
         request = quixote.get_request()
-        try:
-            img = image.get_image(int(request.form['num']))
-        except KeyError:
-            img = image.get_latest_image()
+
+        img = retrieve_image(request)
 
         filename = img.filename
         if filename.lower() in ('jpg', 'jpeg'):
@@ -87,10 +85,7 @@ class RootDirectory(Directory):
         response = quixote.get_response()
         request = quixote.get_request()
 
-        try:
-            img = image.get_image(int(request.form['num']))
-        except KeyError:
-            img = image.get_latest_image()
+        img = retrieve_image(request)
 
         all_comments = []
         for comment in img.get_comments():
@@ -115,10 +110,7 @@ class RootDirectory(Directory):
         response = quixote.get_response()
         request = quixote.get_request()
 
-        try:
-            img = image.get_image(int(request.form['num']))
-        except KeyError:
-            img = image.get_latest_image()
+        img = retrieve_image(request)
 
         try:
             comment = request.form['comment']
@@ -126,3 +118,11 @@ class RootDirectory(Directory):
             return
 
         img.add_comment(comment)
+
+def retrieve_image(request):
+    try:
+        img = image.get_image(int(request.form['num']))
+    except:
+        img = image.get_latest_image()
+
+    return img
