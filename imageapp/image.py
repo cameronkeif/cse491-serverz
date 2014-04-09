@@ -72,8 +72,6 @@ def retrieve_image(i = -1):
     # grab the first result (this will fail if no results!)
     try:
         i, filename, image = c.fetchone()
-        print image
-        print filename
 
         return Image(filename, image)
     except:
