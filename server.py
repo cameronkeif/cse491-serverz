@@ -12,6 +12,7 @@ import quixote.demo.altdemo
 import app
 import quotes
 import chat
+import cookieapp
 
 from StringIO import StringIO
 
@@ -30,10 +31,10 @@ def main():
     except TypeError:
       appname = "HOLYSHITINVALIDAPPWTF"
 
-    validApps = ['myapp', 'image', 'altdemo', 'quotes', 'chat']
+    validApps = ['myapp', 'image', 'altdemo', 'quotes', 'chat', 'cookie']
     if appname not in validApps:
       raise Exception("Invalid application name. Please enter -A followed by 'myapp', " + 
-        "'image', 'altdemo', 'quotes', or 'chat'")
+        "'image', 'altdemo', 'quotes', 'cookie', or 'chat'")
     s = socket.socket()         # Create a socket object
     host = socket.getfqdn()     # Get local machine name
     port = args.p
@@ -157,6 +158,9 @@ def handle_connection(conn, host, port, appname):
   elif appname == "chat":
     # The chat files are in the 'quotes' subdirectory
     wsgi_app = chat.create_chat_app('./chat/html')
+
+  elif appname == "cookie":
+    wsgi_app = cookieapp.wsgi_app
 
   result = wsgi_app(environ, start_response)
   try:
