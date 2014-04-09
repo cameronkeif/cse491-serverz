@@ -85,10 +85,13 @@ class RootDirectory(Directory):
         response = quixote.get_response()
         request = quixote.get_request()
 
-        img = retrieve_image(request)
+        try:
+            i = int(request.form['num'])
+        else:
+            i = -1
 
         all_comments = []
-        for comment in img.get_comments():
+        for comment in image.get_comments(i):
             print comment
             all_comments.append("""\
     <comment>
@@ -110,14 +113,17 @@ class RootDirectory(Directory):
         response = quixote.get_response()
         request = quixote.get_request()
 
-        img = retrieve_image(request)
+        try:
+            i = int(request.form['num'])
+        else:
+            i = -1
 
         try:
             comment = request.form['comment']
         except:
             return
 
-        img.add_comment(comment)
+        image.add_comment(i, comment)
 
 def retrieve_image(request):
     try:

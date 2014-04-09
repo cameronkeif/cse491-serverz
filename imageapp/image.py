@@ -5,17 +5,9 @@ import sys
 class Image:
     filename = ''
     data = ''
-    comments = []
     def __init__(self, filename, data):
         self.filename = filename
         self.data = data
-        self.comments = []
-
-    def add_comment(self, comment):
-        self.comments.append(comment)
-
-    def get_comments(self):
-        return self.comments
 
 images = {}
 
@@ -73,6 +65,42 @@ def retrieve_image(i = -1):
     try:
         i, filename, image = c.fetchone()
 
+        retrieved_image = Image(filename, image)
+
         return Image(filename, image)
     except:
         pass
+
+def add_comment(i, comment):
+    db = sqlite3.connect('images.sqlite')
+   
+    if i == -1:
+        c = db.cursor()
+
+        # Latest image
+        c.execute('SELECT i FROM image_store ORDER BY i DESC LIMIT 1')
+        try:
+            i = c.fetchone()
+        except:
+            return
+
+    db.execute('INSERT INTO image_comments (imageId, comment) VALUES (?,?)', (i, comment))
+    db.commit()
+
+def get_comments(i):
+    comments = []
+    # Get all the comments for this image
+    c = db.cursor()
+    if i == -1:
+        # Latest image
+        c.execute('SELECT i FROM image_store ORDER BY i DESC LIMIT 1')
+        try:
+            i = c.fetchone()
+        except:
+            return
+
+    c.execute('SELECT i, comment FROM image_comments WHERE imageId=(?) ORDER BY i DESC', i)
+    for comment in c:
+        comments.append(comment)
+
+    return comments
