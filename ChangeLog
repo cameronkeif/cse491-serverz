@@ -69,3 +69,20 @@
       rather than getting the most recent image, it gets the image at images[num]. I also added a method to
       return the count of images. Using these two things, I can make a few ajax calls in the image list page
       to iterate over images and display every image.
+
+2014-4-2 Cameron Keif
+  * PROJECT: Add the ability to comment on images
+    - You can post a comment on an image from the /image page.
+
+    - I made an Image class that has a list of comments for that string.
+
+    - A request to the get_comments url provided an image number returns XML containing all of its comments.
+      If the image number is not included it defaults to the latest image
+
+  * PROJECT: Add url handler to refer to each image by its number.
+    - /image_raw?imageNum=# will return the image with num = #.
+
+    - If # is not numeric, or is off the end of the list, it defaults to the latest image.
+
+    - If you go to the images list ( /image_list ) each image is a link to the URL for that image (so the
+      second to the bottom image links to /image?imageNum=1 for example)
