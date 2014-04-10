@@ -6,6 +6,12 @@ Here is your image:
 <p>
 <div id="imageContainer"></div>
 <p>
+Score: <span id="score"></span>
+<p>
+<button id='upvote_button'>Upvote</button>
+<p>
+<button id='downvote_button'>Downvote</button>
+<p>
 <h2>Comments</h2>
 <ul id="comments">
 </ul>
@@ -24,9 +30,19 @@ if($.isNumeric(imageNum)) {
     imageHtml = "<img width=40% src='image_raw?special=latest'/>"
 }
 
-
-
 $("#imageContainer").append(imageHtml)
+
+$.post("get_score?num=" + imageNum,
+    function(score) {
+        score = parseInt(score);
+        if (isNaN(score)){
+            $("#score").append(0)
+        }
+        else {
+            $("#score").append(score)
+        }
+        
+    });
 
 $.post("get_comments?num=" + imageNum,
     function(xml) { 
@@ -48,6 +64,30 @@ $("#add_comment_button").click(function() {
         $("#comments").prepend("<li>" + $("#add_comment").val() + "</li>")
         $("#add_comment").val('')
     })
+});
+
+$("#upvote_button").click(function() {
+    console.log(imageNum);
+    $.post("increment_score?num=" + imageNum,
+        function() {
+        var score = $("#score").text()
+        score = parseInt(score)
+        score += 1
+        $("#score").empty()
+        $("#score").append(score)
+    });
+});
+
+$("#downvote_button").click(function() {
+    console.log(imageNum);
+    $.post("decrement_score?num=" + imageNum,
+        function() {
+        var score = $("#score").text()
+        score = parseInt(score)
+        score -= 1
+        $("#score").empty()
+        $("#score").append(score)
+    });
 });
 </script>
 {% endblock %}

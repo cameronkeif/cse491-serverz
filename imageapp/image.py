@@ -5,25 +5,17 @@ import sys
 class Image:
     filename = ''
     data = ''
-    def __init__(self, filename, data):
+    score = 0
+    def __init__(self, filename, data, score):
         self.filename = filename
         self.data = data
+        self.score = score
 
 images = {}
 
 def add_image(filename, data):
-    if images:
-        image_num = max(images.keys()) + 1
-    else:
-        image_num = 0
-
-    image = Image(filename, data)
-    images[image_num] = image
-
     # insert to database
     insert_image(filename, data)
-
-    return image_num
 
 def get_image(num):
     return retrieve_image(num)
@@ -41,7 +33,8 @@ def insert_image(filename, data):
     # grab whatever it is you want to put in the database
 
     # insert!
-    db.execute('INSERT INTO image_store (filename, image) VALUES (?,?)', (filename, data))
+    db.execute('INSERT INTO image_store (filename, score, image) \
+        VALUES (?,?,?)', (filename, 1, data))
     db.commit()
 
 # retrieve an image from the database.
@@ -57,17 +50,15 @@ def retrieve_image(i):
 
     # select all of the images
     if i >= 0:
-        c.execute('SELECT i, filename, image FROM image_store where i=(?)', (i,))
+        c.execute('SELECT i, filename, score, image FROM image_store where i=(?)', (i,))
     else:
-        c.execute('SELECT i, filename, image FROM image_store ORDER BY i DESC LIMIT 1')
+        c.execute('SELECT i, filename, score, image FROM image_store ORDER BY i DESC LIMIT 1')
 
     # grab the first result (this will fail if no results!)
     try:
-        i, filename, image = c.fetchone()
+        i, filename, score, image = c.fetchone()
 
-        retrieved_image = Image(filename, image)
-
-        return Image(filename, image)
+        return Image(filename, image, score)
     except:
         pass
 
@@ -106,6 +97,43 @@ def get_comments(i):
         comments.append(row[1])
 
     return comments
+
+def get_image_score(i):
+    # connect to database
+    db = sqlite3.connect('images.sqlite')
+
+    # get a query handle (or "cursor")
+    c = db.cursor()
+
+    # select all of the images
+    if i >= 0:
+        c.execute('SELECT score FROM image_store where i=(?)', (i,))
+    else:
+        c.execute('SELECT score FROM image_store ORDER BY i DESC LIMIT 1')
+
+    val = int(c.fetchone()[0])
+    print val
+    return val
+
+def increment_image_score(i):
+# connect to database
+    db = sqlite3.connect('images.sqlite')
+
+    if i < 0:
+        i = get_num_images()
+
+    db.execute('UPDATE image_store SET score = score + 1 where i=(?)', (i,))
+    db.commit()
+
+def decrement_image_score(i):
+# connect to database
+    db = sqlite3.connect('images.sqlite')
+
+    if i < 0:
+        i = get_num_images()
+
+    db.execute('UPDATE image_store SET score = score - 1 where i=(?)', (i,))
+    db.commit()
 
 def get_num_images():
     db = sqlite3.connect('images.sqlite')

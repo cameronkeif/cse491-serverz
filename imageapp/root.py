@@ -128,3 +128,39 @@ class RootDirectory(Directory):
             return
 
         image.add_comment(i, comment)
+
+    @export(name='get_score')
+    def get_score(self):
+        response = quixote.get_response()
+        request = quixote.get_request()
+
+        try:
+            i = int(request.form['num'])
+        except:
+            i = -1
+
+        return image.get_image_score(i)
+
+    @export(name='increment_score')
+    def increment_score(self):
+        response = quixote.get_response()
+        request = quixote.get_request()
+
+        try:
+            i = int(request.form['num'])
+        except:
+            i = -1
+
+        image.increment_image_score(i)
+
+    @export(name='decrement_score')
+    def decrement_score(self):
+        response = quixote.get_response()
+        request = quixote.get_request()
+
+        try:
+            i = int(request.form['num'])
+        except:
+            i = -1
+
+        image.decrement_image_score(i)

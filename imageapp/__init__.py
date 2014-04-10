@@ -29,7 +29,8 @@ def teardown():                         # stuff that should be run once.
 def create_database():
     print 'creating database'
     db = sqlite3.connect('images.sqlite')
-    db.execute('CREATE TABLE image_store (i INTEGER PRIMARY KEY, filename VARCHAR(255), image BLOB)');
+    db.execute('CREATE TABLE image_store (i INTEGER PRIMARY KEY, filename VARCHAR(255), \
+        score INTEGER, image BLOB)');
     db.execute('CREATE TABLE image_comments (i INTEGER PRIMARY KEY, imageId INTEGER, \
      comment TEXT, FOREIGN KEY (imageId) REFERENCES image_store(i))');
     db.commit()
