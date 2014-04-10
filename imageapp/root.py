@@ -62,14 +62,19 @@ class RootDirectory(Directory):
 
     @export(name='image_count')
     def image_count(self):
-        return len(image.images)
+        return image.get_num_images()
 
     @export(name='image_raw')
     def image_raw(self):
         response = quixote.get_response()
         request = quixote.get_request()
 
-        img = retrieve_image(request)
+        try:
+            i = int(request.form['num'])
+        except:
+            i = -1
+
+        img = image.retrieve_image(i)
 
         filename = img.filename
         if filename.lower() in ('jpg', 'jpeg'):
@@ -87,12 +92,11 @@ class RootDirectory(Directory):
 
         try:
             i = int(request.form['num'])
-        else:
+        except:
             i = -1
 
         all_comments = []
         for comment in image.get_comments(i):
-            print comment
             all_comments.append("""\
     <comment>
      <text>%s</text>
@@ -115,7 +119,7 @@ class RootDirectory(Directory):
 
         try:
             i = int(request.form['num'])
-        else:
+        except:
             i = -1
 
         try:
@@ -124,11 +128,3 @@ class RootDirectory(Directory):
             return
 
         image.add_comment(i, comment)
-
-def retrieve_image(request):
-    try:
-        img = image.get_image(int(request.form['num']))
-    except:
-        img = image.get_latest_image()
-
-    return img

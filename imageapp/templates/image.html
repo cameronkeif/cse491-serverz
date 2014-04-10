@@ -12,7 +12,7 @@ Here is your image:
 <input type="text" id='add_comment' />
 <button id="add_comment_button">Add Comment</button>
 <script type="text/javascript">
-var imageNum = window.location.href.split("?imageNum=")[1]
+var imageNum = window.location.href.split("?num=")[1]
 
 imageHtml = ''
 
@@ -30,6 +30,7 @@ $("#imageContainer").append(imageHtml)
 
 $.post("get_comments?num=" + imageNum,
     function(xml) { 
+        console.log(imageNum)
         console.log(xml)
         $("comment", xml).each( function(id) {
             comment = $("comment", xml).get(id)
@@ -44,7 +45,7 @@ $("#add_comment_button").click(function() {
             comment    :   $("#add_comment").val(),
         })
     .success(function(){
-        $("#comments").append("<li>" + $("#add_comment").val() + "</li>")
+        $("#comments").prepend("<li>" + $("#add_comment").val() + "</li>")
         $("#add_comment").val('')
     })
 });
