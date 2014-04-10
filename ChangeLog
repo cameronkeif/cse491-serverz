@@ -86,3 +86,20 @@
 
     - If you go to the images list ( /image_list ) each image is a link to the URL for that image (so the
       second to the bottom image links to /image?imageNum=1 for example)
+
+2014-4-9 Cameron Keif
+	* Implement cookie app
+	* Utilize SQLite to store images
+	* PROJECT: Add data persistence in sqlite
+
+	- I decided to expand on the SQLite stuff and utilize SQlite to store my
+	  comments and other stuff as well. It's an actual website now omg. :)
+
+	* PROJECT: Add starring, ranking, and a simple recommendation system for
+	  your image app image list.
+
+	- I added a field in the image_store table to hold the image's score.
+
+	- On the image page you can upvote/downvote images. Once I have
+	  authentication I can change this so each user can only upvote/downvote
+		once. For now, you can just click it as much as you want.
