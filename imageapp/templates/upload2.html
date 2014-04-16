@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="contentText">
 Upload an image (jpg, png, or tif) (other version):
 
 <form id='form' enctype='multipart/form-data' action='upload_receive' method='POST'>
@@ -11,6 +12,7 @@ Filename: <input type='file' name='file'><p>
 <div id='success', style="display:none">Image successfully uploaded. Nice.</div>
 <div id='failure', style="display:none">Image upload failed. Oh dear. Please try again!</div>
 <img id='image' src=''/>
+</div>
 
 <script type='text/javascript'>
 $(document).ready(function(e) {
