@@ -52,6 +52,7 @@ class RootDirectory(Directory):
     @export(name='create_account_receive')
     def create_account_receive(self):
         request = quixote.get_request()
+        print request.form
         username = request.form['username']
         password = request.form['password']
 
@@ -60,6 +61,7 @@ class RootDirectory(Directory):
         c = db.cursor()
 
         # Latest image
+        print username
         c.execute('SELECT username FROM user WHERE username=(?)', (username,))
 
         if(c.fetchone() == None):

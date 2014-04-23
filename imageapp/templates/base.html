@@ -15,7 +15,9 @@
 
   <span style="display:none" id='loggedInAs'>Logged in as: <span id='username'> {{ username }} 
   </span></span>
-<a style="display:none" id="loginLink" href="login">Login</a>
+<div id="notLoggedInOptions" style="display:none">
+<a href="login">Login</a> | <a href="create_account">Create Account</a>
+</div>
 <p><a style="display:none" id="logoutLink" href="logout">Logout</a>
 </div>
 {% block content %}
@@ -32,7 +34,7 @@ if(username != '')
   $('#loggedInAs').show()
   $('#logoutLink').show()
 } else {
-  $('#loginLink').show()
+  $('#notLoggedInOptions').show()
 }
 </script>
 </html>
