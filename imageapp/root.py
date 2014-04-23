@@ -2,6 +2,7 @@ import quixote
 from quixote.directory import Directory, export, subdir
 from quixote.util import StaticFile
 import os.path
+import sqlite3
 
 from . import html, image
 
@@ -10,26 +11,83 @@ class RootDirectory(Directory):
 
     @export(name='')                    # this makes it public.
     def index(self):
-        return html.render('index.html')
+        username = quixote.get_cookie('username')
+        if not username:
+            username = ''
+        vars = dict(username = username)
+        return html.render('index.html', vars)
 
     @export(name='jquery')
     def jquery(self):
         return open('jquery-1.11.0.min.js').read()
 
+    def authenticate(self, username, password):
+        db = sqlite3.connect('images.sqlite')
+
+        c = db.cursor()
+
+        # Latest image
+        c.execute('SELECT * FROM user where username=(?)', (username,))
+        try:
+            username, pwd = c.fetchone()
+        except:
+            return False
+
+        return pwd == password
+
+    def set_cookie(self, username):
+        quixote.get_response().set_cookie('username', username)
+        return quixote.redirect('./')
+
+    @export(name='logout')
+    def logout(self):
+        response = quixote.get_response()
+        response.set_cookie('username', 'NONE; Expires=Thu, 01-Jan-1970 00:00:01 GMT')
+        return quixote.redirect('./')
+
+    @export(name='create_account')
+    def create_account(self):
+        return html.render('create_account.html')
+
+    @export(name='create_account_receive')
+    def create_account_receive(self):
+        request = quixote.get_request()
+        username = request.form['username']
+        password = request.form['password']
+
+        db = sqlite3.connect('images.sqlite')
+
+        c = db.cursor()
+
+        # Latest image
+        c.execute('SELECT username FROM user WHERE username=(?)', (username,))
+
+        if(c.fetchone() == None):
+            db.execute('INSERT INTO user VALUES (?,?)', (username, password))
+            db.commit()
+
+
+    @export(name='login')
+    def login(self):
+        return html.render('login.html')
+
+    @export(name='login_receive')
+    def login_receive(self):
+        request = quixote.get_request()
+        username = request.form['username']
+        password = request.form['password']
+
+        if(self.authenticate(username, password)):
+            return self.set_cookie(username)
+        return quixote.redirect("./")
+
     @export(name='upload')
     def upload(self):
         return html.render('upload.html')
 
-    @export(name='set')
-    def set(self):
-        response = quixote.get_response()
-
-        print response
-
     @export(name='upload_receive')
     def upload_receive(self):
         request = quixote.get_request()
-        print request.form.keys()
 
         the_file = request.form['file']
         print dir(the_file)
@@ -47,7 +105,6 @@ class RootDirectory(Directory):
     @export(name='upload2_receive')
     def upload2_receive(self):
         request = quixote.get_request()
-        print request.form.keys()
 
         the_file = request.form['file']
         print dir(the_file)

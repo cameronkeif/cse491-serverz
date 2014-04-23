@@ -33,6 +33,8 @@ def create_database():
         score INTEGER, image BLOB)');
     db.execute('CREATE TABLE image_comments (i INTEGER PRIMARY KEY, imageId INTEGER, \
      comment TEXT, FOREIGN KEY (imageId) REFERENCES image_store(i))');
+    db.execute('CREATE TABLE user (username VARCHAR(30) PRIMARY KEY, \
+        password VARCHAR(30))');
     db.commit()
     db.close()
 

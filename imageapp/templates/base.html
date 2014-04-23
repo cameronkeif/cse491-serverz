@@ -11,9 +11,28 @@
             <h1>Image Upload App</h1>
             <h2>Created by Cam Keif<h2>
         </div>
+<div class="contentText">
+
+  <span style="display:none" id='loggedInAs'>Logged in as: <span id='username'> {{ username }} 
+  </span></span>
+<a style="display:none" id="loginLink" href="login">Login</a>
+<p><a style="display:none" id="logoutLink" href="logout">Logout</a>
+</div>
 {% block content %}
 {% endblock %}
     </div>
     <div id="footer"></div>
  </body>
+
+<script type="text/javascript">
+var username = $.trim($('#username').text())
+console.log(username)
+if(username != '')
+{
+  $('#loggedInAs').show()
+  $('#logoutLink').show()
+} else {
+  $('#loginLink').show()
+}
+</script>
 </html>
