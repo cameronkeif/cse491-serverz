@@ -142,3 +142,17 @@
     - the base HTML page now takes in username as an argument, and tells you
     who you're logged in as. If you're not logged in, it will show the login
     and create links
+	
+	* PROJECT Add username login via cookies and tracking of image by "owner".
+		Allow the owner to delete it
+
+		- You now have to be logged in to upload an image. If you're not, the
+		upload links will not appear and you will be redirected if you try
+		to navigate to the page.
+
+		- If you visit an image's page and are logged in as the owner of that
+		image, a button will appear above its score to allow deletion. Click it,
+		a dialog will appear, and if the deletion is confirmed the image will be
+		deleted.
+
+		Thanks for a good semester, Titus! :)
