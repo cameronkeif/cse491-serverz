@@ -121,3 +121,24 @@
 		- When you upload the image, it will show the uploaded image on that page,
 			put it in the database, and display a success message. If it fails an
 			error message appears.
+
+2014-4-23 Cameron Keif
+  * PROJECT Add account creation, login, and authentication
+
+    - If you are not logged in, the top of the page (below the sweet gradient
+    header) will have a link to log in and a link to create an account. All of
+    the functionality for this stuff can be found in root.py, specifically the 
+    login, login_receive, authenticate, logout, create_account, and
+    create_account_receive functions.
+
+    - create_account basically just checks if a user with the desired username
+    exists, and if not inserts username, password into the user table
+
+    - login queries the user table (authenticate function), and checks if the 
+    passwords match. so, it sets a cookie
+
+    - logout just expires the cookie
+
+    - the base HTML page now takes in username as an argument, and tells you
+    who you're logged in as. If you're not logged in, it will show the login
+    and create links

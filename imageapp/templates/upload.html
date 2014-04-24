@@ -11,4 +11,13 @@ Filename: <input type='file' name='file'><p>
 </form>
 
 </div>
+
+<script type="text/javascript">
+var username = $.trim($('#username').text())
+
+if (username == '')
+{
+    window.location.href = "./"
+}
+</script>
 {% endblock %}

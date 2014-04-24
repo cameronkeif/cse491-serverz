@@ -17,6 +17,13 @@ Filename: <input type='file' name='file'><p>
 <script type='text/javascript'>
 $(document).ready(function(e) {
 
+  var username = $.trim($('#username').text())
+
+  if (username == '')
+  {
+      window.location.href = "./"
+  }
+
   $("#form").on('submit', (function(e) {
     e.preventDefault();
     var formData = new FormData(this);
